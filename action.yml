@@ -8,6 +8,11 @@ inputs:
 outputs:
   time: # id of output
     description: "The time we greeted you"
+
 runs:
-  using: "node16"
-  main: "index.js"
+  using: node16
+  main: "dist/index.js"
+
+branding:
+  icon: check-square
+  color: green
