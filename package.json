@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neo-diego-beltran/request-team-review.git"
+    "url": "git+https://github.com/neo-diego-beltran/request-reviewers.git"
   },
   "author": "Diego Beltran",
   "bugs": {
-    "url": "https://github.com/neo-diego-beltran/request-team-review/issues"
+    "url": "https://github.com/neo-diego-beltran/request-reviewers/issues"
   },
-  "homepage": "https://github.com/neo-diego-beltran/request-team-review#readme",
+  "homepage": "https://github.com/neo-diego-beltran/request-reviewers#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/github": "^5.1.1",
