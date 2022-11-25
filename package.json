@@ -1,0 +1,24 @@
+{
+  "name": "request-reviewers-action",
+  "version": "1.0.0",
+  "description": "This is GitHub action for adding reviewers to your PRs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neo-diego-beltran/request-team-review.git"
+  },
+  "author": "Diego Beltran",
+  "bugs": {
+    "url": "https://github.com/neo-diego-beltran/request-team-review/issues"
+  },
+  "homepage": "https://github.com/neo-diego-beltran/request-team-review#readme",
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^5.1.1",
+    "lodash": "^4.17.21",
+    "yaml": "^2.1.3"
+  }
+}
