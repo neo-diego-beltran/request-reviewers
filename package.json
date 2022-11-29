@@ -1,6 +1,7 @@
 {
   "name": "request-reviewers-action",
-  "version": "0.0.3",
+  "type": "module",
+  "version": "0.0.4",
   "description": "This is GitHub action for adding reviewers to your PRs",
   "main": "index.js",
   "scripts": {
@@ -15,7 +16,6 @@
     "url": "https://github.com/neo-diego-beltran/request-reviewers/issues"
   },
   "homepage": "https://github.com/neo-diego-beltran/request-reviewers#readme",
-  "type": "module",
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/github": "^5.1.1",

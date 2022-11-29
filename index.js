@@ -1,8 +1,8 @@
 import * as core from "@actions/core";
 
-import { getOctokitClient } from "./lib/octokit-client";
-import { getConfigData } from "./lib/config-data";
-import { getReviewersToAssign } from "./lib/reviewers";
+import { getOctokitClient } from "./lib/octokit-client.js";
+import { getConfigData } from "./lib/config-data.js";
+import { getReviewersToAssign } from "./lib/reviewers.js";
 
 (async () => {
   try {
