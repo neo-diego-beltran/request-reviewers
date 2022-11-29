@@ -17875,7 +17875,7 @@ var dist = __nccwpck_require__(9490);
 const getConfigData = async (octokitClient) => {
   const configFile = core.getInput("config_path", { required: true });
 
-  const { contentData } = await octokitClient.rest.repos.getContent({
+  const { data } = await octokitClient.rest.repos.getContent({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     path: configFile,
@@ -17887,10 +17887,7 @@ const getConfigData = async (octokitClient) => {
   core.info(`The repo ref is: ${github.context.sha}`);
   core.info(`The configFile is: ${configFile}`);
 
-  const configData = Buffer.from(
-    contentData.content,
-    contentData.encoding
-  ).toString();
+  const configData = Buffer.from(data.content, data.encoding).toString();
 
   try {
     return dist.parse(configData);

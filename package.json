@@ -1,7 +1,7 @@
 {
   "name": "request-reviewers-action",
   "type": "module",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "This is GitHub action for adding reviewers to your PRs",
   "main": "index.js",
   "scripts": {
