@@ -17899,11 +17899,12 @@ const getConfigData = async (octokitClient) => {
 ;// CONCATENATED MODULE: ./lib/reviewers.js
 
 
+
 async function getLabels(octokitClient, pullRequestNumber) {
   const labels = [];
 
   if (pullRequestNumber) {
-    const { status, data } = await octokitClient.pulls.get({
+    const { status, data } = await octokitClient.rest.pulls.get({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       pull_number: github.context.payload.pull_request.number,
@@ -17919,15 +17920,15 @@ async function getLabels(octokitClient, pullRequestNumber) {
 
 const getReviewersToAssign = async (octokitClient, configData) => {
   const author = github.context.payload.pull_request.user.login;
-  console.log("current PR author: ", author);
+  core.info("current PR author: ", author);
 
   const labels = await getLabels(
     octokitClient,
     github.context.payload.pull_request.number
   );
 
-  console.log("current PR labels: ", labels);
-  console.log("current config who: ", configData.who);
+  core.info("current PR labels: ", labels);
+  core.info("current config who: ", configData.who);
 
   // const reviewersToAssign = {
   //   individuals: new Set(),
@@ -17975,7 +17976,7 @@ const getReviewersToAssign = async (octokitClient, configData) => {
   //   if (authorIgnoreSet.includes(author)) {
   //     continue;
   //   }
-  //   console.log(labelSet);
+  //    core.info(labelSet);
   //   const isAuthorOfInterest = authorSet.includes(author);
   //   const isOnTeamOfInterest = await isOnTeam(octokitClient, author, teamSet);
   //   const containsLabelOfInterest =
@@ -17994,8 +17995,8 @@ const getReviewersToAssign = async (octokitClient, configData) => {
   // reviewerAssignments.individuals = [...reviewerAssignments.individuals];
   // reviewerAssignments.teams = [...reviewerAssignments.teams];
 
-  // console.log("Reviewer Assignments:");
-  // console.log(reviewerAssignments);
+  //  core.info("Reviewer Assignments:");
+  //  core.info(reviewerAssignments);
   // return reviewerAssignments;
 };
 
