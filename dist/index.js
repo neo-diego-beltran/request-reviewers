@@ -17851,7 +17851,7 @@ var __webpack_exports__ = {};
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2700);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var lib_github = __nccwpck_require__(5209);
+var github = __nccwpck_require__(5209);
 ;// CONCATENATED MODULE: ./lib/octokit-client.js
 
 
@@ -17859,7 +17859,7 @@ var lib_github = __nccwpck_require__(5209);
 const getOctokitClient = () => {
   try {
     const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
-    return lib_github.getOctokit(githubToken);
+    return github.getOctokit(githubToken);
   } catch (err) {
     core.setFailed(`Action failed with error ${err}`);
   }
@@ -17871,15 +17871,21 @@ var dist = __nccwpck_require__(9490);
 
 
 
+
 const getConfigData = async (octokitClient) => {
   const configFile = core.getInput("config_path", { required: true });
 
-  const { contentData } = await octokitClient.repos.getContent({
+  const { contentData } = await octokitClient.rest.repos.getContent({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     path: configFile,
     ref: github.context.sha,
   });
+
+  core.info(`The repo owner is: ${github.context.repo.owner}`);
+  core.info(`The repo repo is: ${github.context.repo.repo}`);
+  core.info(`The repo ref is: ${github.context.sha}`);
+  core.info(`The configFile is: ${configFile}`);
 
   const configData = Buffer.from(
     contentData.content,
@@ -17901,9 +17907,9 @@ async function getLabels(octokitClient, pullRequestNumber) {
 
   if (pullRequestNumber) {
     const { status, data } = await octokitClient.pulls.get({
-      owner: lib_github.context.repo.owner,
-      repo: lib_github.context.repo.repo,
-      pull_number: lib_github.context.payload.pull_request.number,
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      pull_number: github.context.payload.pull_request.number,
     });
 
     if (status == 200 && data.state != "pending") {
@@ -17915,11 +17921,12 @@ async function getLabels(octokitClient, pullRequestNumber) {
 }
 
 const getReviewersToAssign = async (octokitClient, configData) => {
-  const author = lib_github.context.payload.pull_request.user.login;
+  const author = github.context.payload.pull_request.user.login;
+  console.log("current PR author: ", author);
 
   const labels = await getLabels(
     octokitClient,
-    lib_github.context.payload.pull_request.number
+    github.context.payload.pull_request.number
   );
 
   console.log("current PR labels: ", labels);
@@ -18004,8 +18011,12 @@ const getReviewersToAssign = async (octokitClient, configData) => {
 
 (async () => {
   try {
-    const octokitClient = await getOctokitClient();
+    const octokitClient = getOctokitClient();
     const configData = await getConfigData(octokitClient);
+
+    console.log("====================================");
+    console.log(configData);
+    console.log("====================================");
     // const reviewersToAssign = await getReviewersToAssign(
     //   octokitClient,
     //   configData

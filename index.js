@@ -6,8 +6,12 @@ import { getReviewersToAssign } from "./lib/reviewers.js";
 
 (async () => {
   try {
-    const octokitClient = await getOctokitClient();
+    const octokitClient = getOctokitClient();
     const configData = await getConfigData(octokitClient);
+
+    console.log("====================================");
+    console.log(configData);
+    console.log("====================================");
     // const reviewersToAssign = await getReviewersToAssign(
     //   octokitClient,
     //   configData
