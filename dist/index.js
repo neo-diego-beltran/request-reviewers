@@ -17849,7 +17849,7 @@ var __webpack_exports__ = {};
 (() => {
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var lib_core = __nccwpck_require__(2700);
+var core = __nccwpck_require__(2700);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var lib_github = __nccwpck_require__(5209);
 ;// CONCATENATED MODULE: ./lib/octokit-client.js
@@ -17858,10 +17858,10 @@ var lib_github = __nccwpck_require__(5209);
 
 const getOctokitClient = () => {
   try {
-    const githubToken = lib_core.getInput("GITHUB_TOKEN", { required: true });
+    const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
     return lib_github.getOctokit(githubToken);
   } catch (err) {
-    lib_core.setFailed(`Action failed with error ${err}`);
+    core.setFailed(`Action failed with error ${err}`);
   }
 };
 
@@ -17870,8 +17870,9 @@ var dist = __nccwpck_require__(9490);
 ;// CONCATENATED MODULE: ./lib/config-data.js
 
 
+
 const getConfigData = async (octokitClient) => {
-  const configFile = octokitClient.getInput("config_path", { required: true });
+  const configFile = core.getInput("config_path", { required: true });
 
   const { contentData } = await octokitClient.repos.getContent({
     owner: github.context.repo.owner,
@@ -18015,7 +18016,7 @@ const getReviewersToAssign = async (octokitClient, configData) => {
     // console.log(reviewersToAssign);
     // console.log("====================================");
   } catch (err) {
-    lib_core.setFailed(`Action failed with error ${err}`);
+    core.setFailed(`Action failed with error ${err}`);
   }
 })();
 
