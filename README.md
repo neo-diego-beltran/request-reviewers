@@ -1,23 +1,85 @@
-# Request Team Review
+# Request Reviewers
 
-This action prints "Hello World" or "Hello" + the name of a person to greet to the log.
+## For Developing
 
-## Inputs
+You need to build the new version of the action before publishing/releasing
 
-### `who-to-greet`
+- Install `vercel/ncc` by running this command in your terminal `npm i -g @vercel/ncc`
 
-**Required** The name of the person to greet. Default `"World"`.
+- Compile your index.js file `ncc build index.js --license LICENSE`
 
-## Outputs
+- You'll see a new `dist/index.js` file with your code and the compiled modules.
 
-### `time`
+- You will also see an accompanying `dist/LICENSE` file containing all the licenses of the `node_modules` you are using.
 
-The time we greeted you.
+From your terminal, commit the updates to your branch.
 
-## Example usage
+```shell
+git add .
+git commit -m "A nice commit message"
+git tag -a -m "A nice Action release message" v[the next version]
+git push --follow-tags
+```
 
-```yaml
-uses: actions/hello-world-javascript-action@v1.1
-with:
-  who-to-greet: "Mona the Octocat"
+### Request Reviewers
+
+This is a GitHub action for adding reviewers to your PRs, you can group them by teams and apply a tag on your PR to add that team as reviewers
+
+#### Inputs
+
+| Name           | Type     | Required | Description                              |
+| -------------- | -------- | -------- | ---------------------------------------- |
+| `GITHUB_TOKEN` | `string` | `true`   | This is the GITHUB_TOKEN                 |
+| `config_path`  | `string` | `true`   | this is where the config file is located |
+
+#### Basic Usage Example
+
+File path for action `.github/workflows/request-reviewers.yml`
+
+```yml
+name: 'Request Reviewers'
+on: pull_request
+
+jobs:
+  add-reviews:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request Reviewers
+        uses: neo-diego-beltran/request-reviewers@v0.0.2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config_path: ".github/request-reviewers.yml"
+      secrets: inherit
+```
+
+#### Basic Config Example
+
+File path for action `.github/request-reviewers.yml`
+
+```yml
+who:
+  - label: TEAM_A_LABEL
+    assign:
+      teams:
+        - TeamA1
+      individuals:
+        - ReviewerA1
+        - ReviewerA2
+  - label: TEAM_B_LABEL
+    assign:
+      teams:
+        - TeamB1
+      individuals:
+        - ReviewerB1
+        - ReviewerB2
+  - label: TEAM_C_LABEL
+    assign:
+      individuals:
+        - ReviewerC1
+        - ReviewerC2
+  - label: TEAM_D_LABEL
+    assign:
+      teams:
+        - TeamD1
+        - TeamD2
 ```
