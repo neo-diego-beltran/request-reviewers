@@ -1,12 +1,13 @@
 {
   "name": "request-reviewers-action",
   "type": "module",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "This is GitHub action for adding reviewers to your PRs",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "pre-release": "npm i && ncc build index.js --license LICENSE"
+    "pre-release": "npm i && ncc build index.js --license LICENSE",
+    "local-test": "GITHUB_REPOSITORY=owner/repo node index.js"
   },
   "repository": {
     "type": "git",

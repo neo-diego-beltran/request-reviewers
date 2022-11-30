@@ -17850,159 +17850,113 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2700);
+// EXTERNAL MODULE: ./node_modules/yaml/dist/index.js
+var dist = __nccwpck_require__(9490);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(5209);
-;// CONCATENATED MODULE: ./lib/octokit-client.js
+;// CONCATENATED MODULE: ./lib/octokit-config-reviewers.js
+
 
 
 
 const getOctokitClient = () => {
-  try {
-    const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
-    return github.getOctokit(githubToken);
-  } catch (err) {
-    core.setFailed(`Action failed with error ${err}`);
-  }
+  const gitHubToken = core.getInput("GITHUB_TOKEN", { required: true });
+
+  return github.getOctokit(gitHubToken);
 };
-
-// EXTERNAL MODULE: ./node_modules/yaml/dist/index.js
-var dist = __nccwpck_require__(9490);
-;// CONCATENATED MODULE: ./lib/config-data.js
-
-
-
 
 const getConfigData = async (octokitClient) => {
   const configFile = core.getInput("config_path", { required: true });
+  core.info(`The config file path is: ${configFile}`);
 
-  const { data } = await octokitClient.rest.repos.getContent({
+  core.info(`The repo owner is: ${github.context.repo.owner}`);
+  core.info(`The repo repo is: ${github.context.repo.repo}`);
+  core.info(`The repo ref is: ${github.context.sha}`);
+
+  const { data: pullRequest } = await octokitClient.rest.repos.getContent({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     path: configFile,
     ref: github.context.sha,
   });
 
-  core.info(`The repo owner is: ${github.context.repo.owner}`);
-  core.info(`The repo repo is: ${github.context.repo.repo}`);
-  core.info(`The repo ref is: ${github.context.sha}`);
-  core.info(`The configFile is: ${configFile}`);
+  const configData = Buffer.from(
+    pullRequest.content,
+    pullRequest.encoding
+  ).toString();
 
-  const configData = Buffer.from(data.content, data.encoding).toString();
-
-  try {
-    return dist.parse(configData);
-  } catch (err) {
-    core.setFailed(`Action failed with error ${err}`);
-  }
+  return dist.parse(configData);
 };
 
-;// CONCATENATED MODULE: ./lib/reviewers.js
-
-
-
-async function getLabels(octokitClient, pullRequestNumber) {
+async function getLabels(octokitClient) {
   const labels = [];
 
-  if (pullRequestNumber) {
-    const { status, data } = await octokitClient.rest.pulls.get({
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
-      pull_number: github.context.payload.pull_request.number,
-    });
+  core.info(
+    `The repo PR number is: ${github.context.payload.pull_request.number}`
+  );
 
-    if (status == 200 && data.state != "pending") {
-      data.labels.map((label) => labels.push(label.name));
-    }
+  const { data: pullRequest } = await octokitClient.rest.pulls.get({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    pull_number: github.context.payload.pull_request.number,
+  });
+
+  if (pullRequest.state == "open") {
+    pullRequest.labels.map((label) => labels.push(label.name));
   }
+
+  core.info(`Current PR labels: ${labels}`);
 
   return labels;
 }
 
-const getReviewersToAssign = async (octokitClient, configData) => {
-  const author = github.context.payload.pull_request.user.login;
-  core.info("current PR author: ", author);
+async function getReviewersToAssign(octokitClient, configData) {
+  const labels = await getLabels(octokitClient);
 
-  const labels = await getLabels(
-    octokitClient,
-    github.context.payload.pull_request.number
+  const reviewersToAssign = {
+    individuals: [],
+    teams: [],
+  };
+
+  configData.who.filter((whoToAssign) => {
+    const { label, assign } = whoToAssign;
+
+    if (labels.includes(label)) {
+      if (assign) {
+        const { individuals, teams } = whoToAssign.assign;
+
+        if (individuals) {
+          reviewersToAssign.individuals.push(...individuals);
+        }
+
+        if (teams) {
+          reviewersToAssign.teams.push(...teams);
+        }
+      }
+    }
+  });
+
+  core.info(`Current PR teams assignees: ${reviewersToAssign.teams}`);
+  core.info(
+    `Current PR individuals assignees: ${reviewersToAssign.individuals}`
   );
 
-  core.info("current PR labels: ", labels);
-  core.info("current config who: ", configData.who);
+  return reviewersToAssign;
+}
 
-  // const reviewersToAssign = {
-  //   individuals: new Set(),
-  //   teams: new Set(),
-  // };
-
-  // for (const condition of configData.who) {
-
-  // }
-
-  // for (const condition of configData.when) {
-  //   let authorSet = [];
-  //   let authorIgnoreSet = [];
-  //   let teamSet = [];
-  //   let labelSet = [];
-  //   if (condition.author) {
-  //     authorSet = condition.author.nameIs || [];
-  //     authorIgnoreSet = condition.author.ignore.nameIs || [];
-  //     teamSet = condition.author.teamIs || [];
-  //   }
-  //   if (condition.label) {
-  //     labelSet = condition.label.nameIs || [];
-  //   }
-  //   let individualIgnores = [];
-  //   let teamIgnores = [];
-  //   if (condition.exclude) {
-  //     individualIgnores = condition.exclude.individuals || [];
-  //     teamIgnores = condition.exclude.teams || [];
-  //   }
-  //   let individualAssignments = [];
-  //   if (condition.assign.individuals) {
-  //     individualAssignments =
-  //       condition.assign.individuals.filter(
-  //         (value) => !individualIgnores.includes(value)
-  //       ) || [];
-  //   }
-  //   let teamAssignments = [];
-  //   if (condition.assign.teams) {
-  //     teamAssignments =
-  //       condition.assign.teams.filter(
-  //         (value) => !teamIgnores.includes(value)
-  //       ) || [];
-  //   }
-
-  //   if (authorIgnoreSet.includes(author)) {
-  //     continue;
-  //   }
-  //    core.info(labelSet);
-  //   const isAuthorOfInterest = authorSet.includes(author);
-  //   const isOnTeamOfInterest = await isOnTeam(octokitClient, author, teamSet);
-  //   const containsLabelOfInterest =
-  //     labelSet.filter((value) => labels.includes(value)).length != 0;
-
-  //   if (isAuthorOfInterest || isOnTeamOfInterest || containsLabelOfInterest) {
-  //     individualAssignments.forEach((reviewer) =>
-  //       reviewerAssignments.individuals.add(reviewer)
-  //     );
-  //     teamAssignments.forEach((reviewer) =>
-  //       reviewerAssignments.teams.add(reviewer)
-  //     );
-  //   }
-  // }
-
-  // reviewerAssignments.individuals = [...reviewerAssignments.individuals];
-  // reviewerAssignments.teams = [...reviewerAssignments.teams];
-
-  //  core.info("Reviewer Assignments:");
-  //  core.info(reviewerAssignments);
-  // return reviewerAssignments;
-};
+async function assignReviewers(octokitClient, { individuals, teams }) {
+  if (individuals.length || teams.length) {
+    await octokitClient.rest.pulls.requestReviewers({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      pull_number: github.context.payload.pull_request.number,
+      reviewers: individuals,
+      team_reviewers: teams,
+    });
+  }
+}
 
 ;// CONCATENATED MODULE: ./index.js
-
-
 
 
 
@@ -18011,19 +17965,12 @@ const getReviewersToAssign = async (octokitClient, configData) => {
   try {
     const octokitClient = getOctokitClient();
     const configData = await getConfigData(octokitClient);
+    const reviewersToAssign = await getReviewersToAssign(
+      octokitClient,
+      configData
+    );
 
-    console.log("====================================");
-    console.log(configData);
-    console.log("====================================");
-    // const reviewersToAssign = await getReviewersToAssign(
-    //   octokitClient,
-    //   configData
-    // );
-    await getReviewersToAssign(octokitClient, configData);
-
-    // console.log("====================================");
-    // console.log(reviewersToAssign);
-    // console.log("====================================");
+    await assignReviewers(octokitClient, reviewersToAssign);
   } catch (err) {
     core.setFailed(`Action failed with error ${err}`);
   }
