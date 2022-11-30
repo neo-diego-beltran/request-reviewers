@@ -23,7 +23,13 @@ git push --follow-tags
 
 ### Request Reviewers
 
-This is a GitHub action for adding reviewers to your PRs, you can group them by teams and apply a tag on your PR to add that team as reviewers
+This is a GitHub action for adding reviewers to your PRs. You can add teams and individuals as reviewers by Labels.
+
+- Add action to your `.github/workflows`.
+- Add config yml `.github/`.
+- You need to create a Label ex. `TEAM_A`.
+- In your config yml file you will need to add the `TEAM_A` label and add your teams or individuals.
+- When you open a new PR you will need to add the `TEAM_A` label to add the reviewers.
 
 #### Inputs
 
