@@ -102,3 +102,7 @@ typings/
 
 # TernJS port file
 .tern-port
+
+# Remove custom testing js files
+*.local-testing.*
+/lib/*.local-testing.*
