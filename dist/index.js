@@ -17859,10 +17859,14 @@ var github = __nccwpck_require__(5209);
 
 
 
-async function getLabels(octokitClient) {
+const logInfo = (message) => {
+  return core.info(`${message}\n`);
+};
+
+const getLabels = async (octokitClient) => {
   const labels = [];
 
-  core.info(`Current PR number: ${github.context.payload.pull_request.number}`);
+  logInfo(`Current PR number: ${github.context.payload.pull_request.number}`);
 
   const { data: pullRequest } = await octokitClient.rest.pulls.get({
     owner: github.context.repo.owner,
@@ -17874,12 +17878,12 @@ async function getLabels(octokitClient) {
     pullRequest.labels.map((label) => labels.push(label.name));
   }
 
-  core.info(`Current PR labels: ${labels}\n`);
+  logInfo(`Current PR labels: ${labels}`);
 
   return labels;
-}
+};
 
-async function getContent(octokitClient, contentPath) {
+const getContent = async (octokitClient, contentPath) => {
   const { data } = await octokitClient.rest.repos.getContent({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
@@ -17888,9 +17892,9 @@ async function getContent(octokitClient, contentPath) {
   });
 
   return Buffer.from(data.content, data.encoding).toString();
-}
+};
 
-async function getCodeOwners(octokitClient) {
+const getCodeOwners = async (octokitClient) => {
   const codeownersPathInput = core.getInput("codeowners_path", {
     required: false,
   });
@@ -17916,13 +17920,13 @@ async function getCodeOwners(octokitClient) {
 
       return previous;
     }, []);
-}
+};
 
 const getOctokitClient = () => {
   const gitHubToken = core.getInput("GITHUB_TOKEN", { required: true });
 
-  core.info(`Repository owner: ${github.context.repo.owner}\n`);
-  core.info(`Repository name: ${github.context.repo.repo}\n`);
+  logInfo(`Repository owner: ${github.context.repo.owner}`);
+  logInfo(`Repository name: ${github.context.repo.repo}`);
 
   return github.getOctokit(gitHubToken);
 };
@@ -17964,12 +17968,12 @@ async function getReviewersToAssign(octokitClient, configData) {
     }
   });
 
-  core.info(`Current PR author: ${author}\n`);
-  core.info(`Current PR CODEOWNERS: ${codeowners}\n`);
+  logInfo(`Current PR author: ${author}`);
+  logInfo(`Current PR CODEOWNERS: ${codeowners}`);
 
   const reviewersToRemove = [author, ...codeowners];
 
-  core.info(`Current PR reviewers To Remove: ${reviewersToRemove}\n`);
+  logInfo(`Current PR reviewers To Remove: ${reviewersToRemove}`);
 
   return {
     individuals: reviewersToAssign.individuals.filter(
@@ -17980,8 +17984,8 @@ async function getReviewersToAssign(octokitClient, configData) {
 }
 
 async function assignReviewers(octokitClient, { individuals, teams }) {
-  core.info(`Current PR teams assignees: ${teams}\n`);
-  core.info(`Current PR individuals assignees: ${individuals}\n`);
+  logInfo(`Current PR teams assignees: ${teams}`);
+  logInfo(`Current PR individuals assignees: ${individuals}`);
 
   if (individuals.length || teams.length) {
     await octokitClient.rest.pulls.requestReviewers({
