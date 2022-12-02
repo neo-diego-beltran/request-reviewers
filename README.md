@@ -27,35 +27,37 @@ This is a GitHub action for adding reviewers to your PRs. You can add teams and 
 
 - Add action to your `.github/workflows`.
 - Add config yml `.github/`.
+- Add CODEOWNERS file to `.github/` if its already there, don't include the `codeowners_path` input.
 - You need to create a Label ex. `TEAM_A`.
 - In your config yml file you will need to add the `TEAM_A` label and add your teams or individuals.
 - When you open a new PR you will need to add the `TEAM_A` label to add the reviewers.
 
 #### Inputs
 
-| Name           | Type     | Required | Description                              |
-| -------------- | -------- | -------- | ---------------------------------------- |
-| `GITHUB_TOKEN` | `string` | `true`   | This is the GITHUB_TOKEN                 |
-| `config_path`  | `string` | `true`   | this is where the config file is located |
+| Name              | Type     | Required | Description                                  |
+| ----------------- | -------- | -------- | -------------------------------------------- |
+| `GITHUB_TOKEN`    | `secret` | `true`   | This is the GITHUB_TOKEN                     |
+| `config_path`     | `string` | `true`   | This is where the config file is located     |
+| `codeowners_path` | `string` | `false`  | This is where the CODEOWNERS file is located |
 
 #### Basic Usage Example
 
 File path for action `.github/workflows/request-reviewers.yml`
 
 ```yml
-name: 'Request Reviewers'
-on: pull_request
+name: "Request Reviewers"
+
+on:
+  pull_request:
+    types: ["opened", "reopened"]
 
 jobs:
-  add-reviews:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Request Reviewers
-        uses: neo-diego-beltran/request-reviewers@v0.0.2
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          config_path: ".github/request-reviewers.yml"
-      secrets: inherit
+  add-reviewers:
+    name: Request Reviewers
+    uses: neofinancial/shared-workflows/.github/workflows/request-reviewers.yml@master
+    with:
+      config_path: ".github/request-reviewers.yml"
+    secrets: inherit
 ```
 
 #### Basic Config Example
