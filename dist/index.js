@@ -17859,41 +17859,10 @@ var github = __nccwpck_require__(5209);
 
 
 
-const getOctokitClient = () => {
-  const gitHubToken = core.getInput("GITHUB_TOKEN", { required: true });
-
-  return github.getOctokit(gitHubToken);
-};
-
-const getConfigData = async (octokitClient) => {
-  const configFile = core.getInput("config_path", { required: true });
-  core.info(`The config file path is: ${configFile}`);
-
-  core.info(`The repo owner is: ${github.context.repo.owner}`);
-  core.info(`The repo repo is: ${github.context.repo.repo}`);
-  core.info(`The repo ref is: ${github.context.sha}`);
-
-  const { data: pullRequest } = await octokitClient.rest.repos.getContent({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    path: configFile,
-    ref: github.context.sha,
-  });
-
-  const configData = Buffer.from(
-    pullRequest.content,
-    pullRequest.encoding
-  ).toString();
-
-  return dist.parse(configData);
-};
-
 async function getLabels(octokitClient) {
   const labels = [];
 
-  core.info(
-    `The repo PR number is: ${github.context.payload.pull_request.number}`
-  );
+  core.info(`Current PR number: ${github.context.payload.pull_request.number}`);
 
   const { data: pullRequest } = await octokitClient.rest.pulls.get({
     owner: github.context.repo.owner,
@@ -17905,12 +17874,71 @@ async function getLabels(octokitClient) {
     pullRequest.labels.map((label) => labels.push(label.name));
   }
 
-  core.info(`Current PR labels: ${labels}`);
+  core.info(`Current PR labels: ${labels}\n`);
 
   return labels;
 }
 
+async function getContent(octokitClient, contentPath) {
+  const { data } = await octokitClient.rest.repos.getContent({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    path: contentPath,
+    ref: github.context.sha,
+  });
+
+  return Buffer.from(data.content, data.encoding).toString();
+}
+
+async function getCodeOwners(octokitClient) {
+  const codeownersPathInput = core.getInput("codeowners_path", {
+    required: false,
+  });
+
+  let codeownersPath = codeownersPathInput;
+  if (
+    typeof codeownersPathInput === "string" &&
+    codeownersPathInput.trim().length === 0
+  ) {
+    codeownersPath = ".github/CODEOWNERS";
+  }
+
+  const codeownersString = await getContent(octokitClient, codeownersPath);
+
+  return codeownersString
+    .replace("*", "")
+    .trim()
+    .split("@")
+    .reduce((previous, current) => {
+      if (current) {
+        previous.push(current.trim());
+      }
+
+      return previous;
+    }, []);
+}
+
+const getOctokitClient = () => {
+  const gitHubToken = core.getInput("GITHUB_TOKEN", { required: true });
+
+  core.info(`Repository owner: ${github.context.repo.owner}\n`);
+  core.info(`Repository name: ${github.context.repo.repo}\n`);
+
+  return github.getOctokit(gitHubToken);
+};
+
+const getConfigData = async (octokitClient) => {
+  const configFile = core.getInput("config_path", { required: false });
+
+  const configData = await getContent(octokitClient, configFile);
+
+  return dist.parse(configData);
+};
+
 async function getReviewersToAssign(octokitClient, configData) {
+  const author = github.context.payload.pull_request.user.login;
+  const codeowners = await getCodeOwners(octokitClient);
+
   const labels = await getLabels(octokitClient);
 
   const reviewersToAssign = {
@@ -17936,15 +17964,25 @@ async function getReviewersToAssign(octokitClient, configData) {
     }
   });
 
-  core.info(`Current PR teams assignees: ${reviewersToAssign.teams}`);
-  core.info(
-    `Current PR individuals assignees: ${reviewersToAssign.individuals}`
-  );
+  core.info(`Current PR author: ${author}\n`);
+  core.info(`Current PR CODEOWNERS: ${codeowners}\n`);
 
-  return reviewersToAssign;
+  const reviewersToRemove = [author, ...codeowners];
+
+  core.info(`Current PR reviewers To Remove: ${reviewersToRemove}\n`);
+
+  return {
+    individuals: reviewersToAssign.individuals.filter(
+      (individual) => !reviewersToRemove.includes(individual)
+    ),
+    teams: reviewersToAssign.teams,
+  };
 }
 
 async function assignReviewers(octokitClient, { individuals, teams }) {
+  core.info(`Current PR teams assignees: ${teams}\n`);
+  core.info(`Current PR individuals assignees: ${individuals}\n`);
+
   if (individuals.length || teams.length) {
     await octokitClient.rest.pulls.requestReviewers({
       owner: github.context.repo.owner,
