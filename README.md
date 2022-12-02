@@ -45,19 +45,21 @@ This is a GitHub action for adding reviewers to your PRs. You can add teams and 
 File path for action `.github/workflows/request-reviewers.yml`
 
 ```yml
-name: "Request Reviewers"
+name: 'Request Reviewers'
 
 on:
   pull_request:
-    types: ["opened", "reopened"]
+    types: ['opened', 'labeled', 'labeled']
 
 jobs:
-  add-reviewers:
-    name: Request Reviewers
-    uses: neofinancial/shared-workflows/.github/workflows/request-reviewers.yml@master
-    with:
-      config_path: ".github/request-reviewers.yml"
-    secrets: inherit
+  add-reviews:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request Reviewers
+        uses: neo-diego-beltran/request-reviewers@f028375d516d93d6a4dd5f93feccfc7f3c768a9b
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config_path: ".github/request-reviewers.yml"
 ```
 
 #### Basic Config Example
