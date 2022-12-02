@@ -1,18 +1,22 @@
 name: "Request Reviewers"
-description: "This is GitHub action for adding reviewers to your PRs."
+
+description: "This is a GitHub action for adding reviewers to your PRs. You can add teams and individuals as reviewers by Labels."
+
 inputs:
-  who-to-greet: # id of input
-    description: "Who to greet"
+  GITHUB_TOKEN:
+    description: "This is the GITHUB_TOKEN"
     required: true
-    default: "World"
-outputs:
-  time: # id of output
-    description: "The time we greeted you"
+  config_path:
+    description: "This is where the config file is located"
+    required: true
+  codeowners_path:
+    description: "This is where the CODEOWNERS file is located"
+    required: false
 
 runs:
   using: node16
   main: "dist/index.js"
 
 branding:
-  icon: check-square
-  color: green
+  icon: users
+  color: white
