@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 
 import {
-  getOctokitClient,
+  initAction,
   getConfigData,
   getReviewersToAssign,
   assignReviewers,
@@ -9,14 +9,13 @@ import {
 
 (async () => {
   try {
-    const octokitClient = getOctokitClient();
-    const configData = await getConfigData(octokitClient);
-    const reviewersToAssign = await getReviewersToAssign(
-      octokitClient,
-      configData
-    );
+    initAction();
 
-    await assignReviewers(octokitClient, reviewersToAssign);
+    const configData = await getConfigData();
+
+    const reviewersToAssign = await getReviewersToAssign(configData);
+
+    await assignReviewers(reviewersToAssign);
   } catch (err) {
     core.setFailed(`Action failed with error ${err}`);
   }
